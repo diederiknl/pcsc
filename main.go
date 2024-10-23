@@ -2,29 +2,28 @@ package main
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/deeper-x/gopcsc/smartcard"
+	"log"
 )
 
-func main() {
+func readCard() ([]byte, error) {
 	// Establish context
 	ctx, err := smartcard.EstablishContext()
 	if err != nil {
-		log.Fatalf("Failed to establish context: %v", err)
+		return nil, fmt.Errorf("failed to establish context: %v", err)
 	}
 	defer ctx.Release()
 
 	// Wait for card to be present
 	reader, err := ctx.WaitForCardPresent()
 	if err != nil {
-		log.Fatalf("Failed to wait for card present: %v", err)
+		return nil, fmt.Errorf("failed to wait for card present: %v", err)
 	}
 
 	// Connect to the card
 	card, err := reader.Connect()
 	if err != nil {
-		log.Fatalf("Failed to connect to card: %v", err)
+		return nil, fmt.Errorf("failed to connect to card: %v", err)
 	}
 	defer card.Disconnect()
 
@@ -37,11 +36,26 @@ func main() {
 	// Transmit APDU command
 	response, err := card.TransmitAPDU(command)
 	if err != nil {
-		log.Fatalf("Failed to transmit APDU: %v", err)
+		return nil, fmt.Errorf("failed to transmit APDU: %v", err)
 	}
 
 	// Print response
 	fmt.Printf("Response: %X\n", response)
+	return response, nil
+}
+
+func main() {
+	fmt.Println("Before infinite loop")
+	for {
+		fmt.Println("Loopie")
+		response, err := readCard()
+		if err != nil {
+			log.Fatalf("Error reading card: %v", err)
+		}
+
+		fmt.Printf("Response Data: %X\n", response)
+	}
+
 }
 
 // SelectCommand constructs an APDU command
