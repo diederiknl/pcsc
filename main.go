@@ -1,66 +1,97 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/deeper-x/gopcsc/smartcard"
-	"log"
+	"github.com/ebfe/scard"
+	"io/ioutil"
+	"net/http"
+	"strings"
+	"time"
 )
 
-func readCard() ([]byte, error) {
-	// Establish context
-	ctx, err := smartcard.EstablishContext()
-	if err != nil {
-		return nil, fmt.Errorf("failed to establish context: %v", err)
-	}
-	defer ctx.Release()
-
-	// Wait for card to be present
-	reader, err := ctx.WaitForCardPresent()
-	if err != nil {
-		return nil, fmt.Errorf("failed to wait for card present: %v", err)
-	}
-
-	// Connect to the card
-	card, err := reader.Connect()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to card: %v", err)
-	}
-	defer card.Disconnect()
-
-	// Print the ATR of the card
-	fmt.Printf("Card ATR: %X\n", card.ATR())
-
-	// Create APDU command (SelectCommand function)
-	command := SelectCommand(0xa0, 0x00, 0x00, 0x00, 0x62, 0x03, 0x01, 0x0c, 0x01, 0x01)
-
-	// Transmit APDU command
-	response, err := card.TransmitAPDU(command)
-	if err != nil {
-		return nil, fmt.Errorf("failed to transmit APDU: %v", err)
-	}
-
-	// Print response
-	fmt.Printf("Response: %X\n", response)
-	return response, nil
+type SmartCardData struct {
+	Data      string    `json:"data"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 func main() {
-	fmt.Println("Before infinite loop")
-	for {
-		fmt.Println("Loopie")
-		response, err := readCard()
-		if err != nil {
-			log.Fatalf("Error reading card: %v", err)
-		}
+	// Lees de smartcard uit
+	data := readSmartCard()
 
-		fmt.Printf("Response Data: %X\n", response)
-	}
-
+	// Stuur de data naar de REST-API
+	sendToAPI(data)
 }
 
-// SelectCommand constructs an APDU command
-func SelectCommand(cla, ins, p1, p2 byte, data ...byte) []byte {
-	lc := byte(len(data))
-	apdu := append([]byte{cla, ins, p1, p2, lc}, data...)
-	return apdu
+func readSmartCard() string {
+	ctx, err := scard.EstablishContext()
+	if err != nil {
+		fmt.Println("Error establishing return :", err)
+	}
+	defer ctx.Release()
+
+	readers, err := ctx.ListReaders()
+	if err != nil {
+		fmt.Println("Error listing readers:", err)
+
+	}
+
+	if len(readers) == 0 {
+		fmt.Println("No smartcard readers found")
+
+	}
+
+	reader := readers[0]
+	card, err := ctx.Connect(reader, scard.ShareShared, scard.ProtocolAny)
+	if err != nil {
+		fmt.Println("Error connecting to card:", err)
+
+	}
+	defer card.Disconnect(scard.LeaveCard)
+
+	cmd := []byte{0x00, 0xA4, 0x04, 0x00, 0x00} // Example APDU command
+	resp, err := card.Transmit(cmd)
+	if err != nil {
+		fmt.Println("Error transmitting APDU:", err)
+
+	}
+
+	fmt.Printf("Response: %X\n", resp)
+	return
+}
+
+func sendToAPI(data string) {
+	url := "http://localhost:8080/data"
+	smartCardData := SmartCardData{
+		Data:      data,
+		Timestamp: time.Now(),
+	}
+
+	jsonData, err := json.Marshal(smartCardData)
+	if err != nil {
+		fmt.Println("Error marshalling JSON:", err)
+		return
+	}
+
+	req, err := http.NewRequest("POST", url, ioutil.NopCloser(strings.NewReader(string(jsonData))))
+	if err != nil {
+		fmt.Println("Error creating request:", err)
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		fmt.Println("Error sending request:", err)
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		fmt.Println("Error reading response:", err)
+		return
+	}
+	fmt.Println("Response from API:", string(body))
 }
