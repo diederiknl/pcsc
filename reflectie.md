@@ -15,3 +15,5 @@ In de directory API heb ik door Copilot een API laten genereren. Kenmerkend daar
 Vervolgens ben ik tegen de structuur van GO aan gelopen. API is wat mij betreft nu geen package, maar een hoofdstructuur. Hoe Git hier mee om gaat is voor mij nog een vraagteken.
 
 -[ ] Hoe werkt Git met packages?
+
+Ok, dus met hulp van Copilot heb ik net mijn eigen package gemaakt.
