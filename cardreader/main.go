@@ -1,4 +1,4 @@
-package main
+package cardreader
 
 import (
 	"encoding/json"
