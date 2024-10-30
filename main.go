@@ -57,7 +57,7 @@ func readSmartCard() string {
 	}
 
 	fmt.Printf("Response: %X\n", resp)
-	return
+	return string(resp)
 }
 
 func sendToAPI(data string) {
