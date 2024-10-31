@@ -1,4 +1,4 @@
-module PCSC
+module github.com/diederiknl/PCSC
 
 go 1.23.2
 
