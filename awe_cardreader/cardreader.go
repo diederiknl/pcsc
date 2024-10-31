@@ -15,14 +15,6 @@ type SmartCardData struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func main() {
-	// Lees de smartcard uit
-	data := readSmartCard()
-
-	// Stuur de data naar de REST-API
-	sendToAPI(data)
-}
-
 func readSmartCard() string {
 	ctx, err := scard.EstablishContext()
 	if err != nil {
