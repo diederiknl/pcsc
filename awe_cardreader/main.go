@@ -1,4 +1,4 @@
-package cardreader
+package awe_cardreader
 
 import (
 	"encoding/json"

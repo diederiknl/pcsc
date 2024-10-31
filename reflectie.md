@@ -17,3 +17,7 @@ Vervolgens ben ik tegen de structuur van GO aan gelopen. API is wat mij betreft 
 -[ ] Hoe werkt Git met packages?
 
 Ok, dus met hulp van Copilot heb ik net mijn eigen package gemaakt.
+
+## 31 oktober 2024
+
+API er uit gehaald en in een nieuwe repository (awe-api) gestopt. Nu PCSC weer even rechttrekken

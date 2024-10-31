@@ -1,9 +1,13 @@
 package main
 
+import (
+	"github.com/diederiknl/PCSC/awe_cardreader"
+)
+
 func main() {
 	// Lees de smartcard uit
-	data := pkg.ReadSmartCard()
+	data := awe_cardreader.ReadSmartCard()
 
 	// Stuur de data naar de REST-API
-	pkg.SendToAPI(data)
+	awe_cardreader.SendToAPI(data)
 }
