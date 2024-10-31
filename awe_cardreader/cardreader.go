@@ -15,7 +15,7 @@ type SmartCardData struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-func readSmartCard() string {
+func ReadSmartCard() string {
 	ctx, err := scard.EstablishContext()
 	if err != nil {
 		fmt.Println("Error establishing return :", err)
@@ -52,7 +52,7 @@ func readSmartCard() string {
 	return string(resp)
 }
 
-func sendToAPI(data string) {
+func SendToAPI(data string) {
 	url := "http://localhost:8080/data"
 	smartCardData := SmartCardData{
 		Data:      data,
