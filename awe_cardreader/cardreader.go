@@ -65,7 +65,8 @@ func SendToAPI(data string) {
 		return
 	}
 
-	req, err := http.NewRequest("POST", url, ioutil.NopCloser(strings.NewReader(string(jsonData))))
+	//req, err := http.NewRequest("POST", url, ioutil.NopCloser(strings.NewReader(string(jsonData))))
+	req, err := http.NewRequest("POST", url, strings.NewReader(string(jsonData)))
 	if err != nil {
 		fmt.Println("Error creating request:", err)
 		return
